@@ -10,9 +10,7 @@ retrieve_members <- function(){
   member_list <- httr::GET(url) %>% rvest::html_attr("member-select")
   
   member_name <- member_list %>% rvest::html(".a.member__name")
-  
-  
-  
+
    
   #
   # Maak de functie af, sla je data op in members_df zodat de regels hieronder goed werken
