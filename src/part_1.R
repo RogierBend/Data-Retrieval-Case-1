@@ -7,7 +7,13 @@ library(tidyverse)
 #' @return A tibble with the columns as specified
 retrieve_members <- function(){
   url <- "https://www.tweedekamer.nl/kamerleden_en_commissies/alle_kamerleden"
+  member_list <- httr::GET(url) %>% rvest::html_attr("member-select")
   
+  member_name <- member_list %>% rvest::html(".a.member__name")
+  
+  
+  
+   
   #
   # Maak de functie af, sla je data op in members_df zodat de regels hieronder goed werken
   #
