@@ -7,13 +7,12 @@ library(tidyverse)
 #' @return A tibble with the columns as specified
 retrieve_members <- function(){
   url <- "https://www.tweedekamer.nl/kamerleden_en_commissies/alle_kamerleden"
-  member_list <- httr::GET(url) %>% rvest::html_attr("member-select")
+  member_link <- httr::GET(url) %>% httr::content() 
+  members <- member_link %>% rvest::html_nodes(".member__name")
+  member_names <- members %>% rvest::html_text()
+  party <- member_link %>%  rvest::html_nodes(".member__tag")
+  member_party <- party %>% rvest::html_text()
   
-  member_name <- member_list %>% rvest::html(".a.member__name")
-
-  #
-  # Maak de functie af, sla je data op in members_df zodat de regels hieronder goed werken
-  #
   
   saveRDS(members_df, file = "clean_data/members.Rds")
   return(members_df)
@@ -25,7 +24,7 @@ retrieve_members <- function(){
 #'
 #' @return A tibble with the columns as specified
 retrieve_member_activity <- function(member_url){
-  url <- str_c("https://www.tweedekamer.nl", member_url)
+  url <- str_c("https://www.tweedekamer.nl", member_url) 
   
   page <- httr::GET(url) %>% httr::content()
   full_list_links <- page %>% rvest::html_nodes(".read-more") %>% rvest::html_attr("href") %>% str_replace_all("dpp=15","dpp=1000")
@@ -33,6 +32,10 @@ retrieve_member_activity <- function(member_url){
   #
   # Maak de functie af, sla je data op in activity zodat de regels hieronder goed werken
   #
+  
+  #Loop alle links voor 1 persoon
+  # vragen nummer mag leeg blijven
+  
   
   return(activity)
 }
