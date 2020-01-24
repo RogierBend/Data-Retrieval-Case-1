@@ -16,13 +16,19 @@ retrieve_members <- function(){
 
   link <- member_link %>% rvest::html_nodes((".member__name"))
   member_url <- link %>% rvest::html_attr("href")
-  
+
   info <- member_link %>%  rvest::html_nodes("td")
   member_info <- info %>% rvest::html_text()
- 
+  #member_city <- substring(member_info, "woonplaats")
+  
+  
+# Nog splitsen
 
-  member_df <- data.frame(Naam = member_names, 
-                          partij = member_party, 
+  
+    
+  
+  members_df <- data.frame(name  = member_names, 
+                          party = member_party, 
                           url = member_url)
   
   saveRDS(members_df, file = "clean_data/members.Rds")
