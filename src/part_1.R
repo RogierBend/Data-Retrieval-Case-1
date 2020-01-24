@@ -12,7 +12,15 @@ retrieve_members <- function(){
   member_names <- members %>% rvest::html_text()
   party <- member_link %>%  rvest::html_nodes(".member__tag")
   member_party <- party %>% rvest::html_text()
+  link <- member_link %>% rvest::html_attr(("href"))
+  member_url <- link %>% rvest::html_text()
+  info <- member_link %>%  rvest::html_nodes("td")
+  member_info <- info %>% rvest::html_text()
+  df <- data_frame(member_info)
   
+  member_df <- data.frame(Naam = member_names, 
+                          partij = member_party, 
+                          member_info)
   
   saveRDS(members_df, file = "clean_data/members.Rds")
   return(members_df)
