@@ -1,9 +1,11 @@
 library(tidyverse)
 
-#' Retrieve members of parliament
+source("src/part_1_test.R")
+
+ n #' Retrieve members of parliament
 #'
 #' Side effect: the members info is saved in the clean_data folder
-#' 
+#'
 #' @return A tibble with the columns as specified
 retrieve_members <- function(){
   url <- "https://www.tweedekamer.nl/kamerleden_en_commissies/alle_kamerleden"
@@ -68,26 +70,82 @@ retrieve_members <- function(){
 
 #' Retrieve activity of a single member of parliament
 #'
-#' @param member_url The url to the personal page of a member
+#' @param member_url The url to the personal page of a memberretr
 #'
 #' @return A tibble with the columns as specified
+
+
 retrieve_member_activity <- function(member_url){
   url <- str_c("https://www.tweedekamer.nl", member_url) 
   
   page <- httr::GET(url) %>% httr::content()
   full_list_links <- page %>% rvest::html_nodes(".read-more") %>% rvest::html_attr("href") %>% str_replace_all("dpp=15","dpp=1000")
+  url_questions <-  str_c("https://www.tweedekamer.nl", full_list_links[1])
+  page_questions <- httr::GET(url_questions) %>% httr::content()
+  
+  url_amendementen <- str_c("https://www.tweedekamer.nl", full_list_links[2])
+  page_amendementen <- httr::GET(url_amendementen) %>% httr::content()
+  
+  url_moties <- str_c("https://www.tweedekamer.nl", full_list_links[3])
+  page_moties <- httr::GET(url_moties) %>% httr::content()
+  
+  
+  question_title <- page_questions %>% rvest::html_nodes("h3") %>%  rvest::html_text()
+  question_url <- page_questions %>% rvest::html_nodes("h3") %>% rvest::html_attr("href") #werkt nog niet
+  question_id <- page_questions %>% rvest::html_nodes(".id") %>%  rvest::html_text()
+  question_date <- page_questions %>% rvest::html_nodes(".date") %>%  rvest::html_text()
+  
+  member_data_question <- tibble(
+      member_url = member_url[1],
+      type = "Schriftelijke Vragen",
+      title = question_title,
+      url = question_url,
+      id = question_id,
+      date = question_date
+      )
+  
+  
+  amendementen_title <- page_amendementen %>% rvest::html_nodes("h3") %>%  rvest::html_text()
+  amendementen_url <- page_amendementen %>% rvest::html_nodes("h3") %>% rvest::html_attr("href") #werkt nog niet
+  amendementen_id <- page_amendementen %>% rvest::html_nodes(".id") %>%  rvest::html_text()
+  amendementen_date <- page_amendementen %>% rvest::html_nodes(".date") %>%  rvest::html_text()
+  
+  member_data_amendementen <- tibble(
+    member_url = member_url,
+    type = "Amendementen",
+    title = amendementen_title,
+    url = amendementen_url,
+    id = amendementen_id,
+    date = amendementen_date
+  )  
+  
+  
+  moties_title <- page_moties %>% rvest::html_nodes("h3") %>%  rvest::html_text()
+  moties_url <- page_moties %>% rvest::html_nodes("h3") %>% rvest::html_attr("href") #werkt nog niet
+  moties_id <- page_moties %>% rvest::html_nodes(".id") %>%  rvest::html_text()
+  moties_date <- page_moties %>% rvest::html_nodes(".date") %>%  rvest::html_text()
+  
+  member_data_moties <- tibble(
+    member_url = member_url,
+    type = "Moties",
+    title = moties_title,
+    url = moties_url,
+    id = moties_id,
+    date = moties_date
+  )  
+  
+  
+  activity <- rbind(member_data_question, member_data_amendementen, member_data_moties)
+  activity <- data.frame(activity)
+  
   
   #
   # Maak de functie af, sla je data op in activity zodat de regels hieronder goed werken
   #
-  
-  #Loop alle links voor 1 persoon
-  # vragen nummer mag leeg blijven
-  
-  
+
   return(activity)
 }
-
+  
 #' Retrieve and save activity for the given members
 #'
 #' Side effect: the activity is saved in the clean_data folder
