@@ -10,26 +10,57 @@ retrieve_members <- function(){
   member_link <- httr::GET(url) %>% httr::content() 
   members <- member_link %>% rvest::html_nodes(".member__name")
   member_names <- members %>% rvest::html_text()
+  member_names <- member_names[-151]
 
   party <- member_link %>%  rvest::html_nodes(".member__tag")
   member_party <- party %>% rvest::html_text()
+  member_party <- member_party[-151]
 
   link <- member_link %>% rvest::html_nodes((".member__name"))
   member_url <- link %>% rvest::html_attr("href")
+  member_url <- member_url[-151]
 
   info <- member_link %>%  rvest::html_nodes("td")
   member_info <- info %>% rvest::html_text()
-  #member_city <- substring(member_info, "woonplaats")
   
+  member_city <- vector(mode = "logical", length = 0)
+  member_age<- vector(mode = "logical", length = 0)
+  member_days_active <- vector(mode = "logical", length = 0)
   
-# Nog splitsen
+  i <- 1
+  x <- 1
+  for (i in (1:max(row_number(member_info))))  {
+    if (member_info[i] == "Woonplaats") {
+      member_city[x] <- member_info[i+1]
+      i = i + 2
+      x = x + 1
+    } else if (member_info[i] == "Leeftijd") {
+      member_age[x] <- readr::parse_number(member_info[i+1])
+      i = i + 2
+      x = x + 1
+    } else if (member_info[i] == "Anciënniteit") {
+      member_days_active[x] <- readr::parse_number(member_info[i+1])
+      i = i + 2
+      x = x + 1
+    } else {
+      i= i + 1
+    }
+  }  
+  
+  member_age <- member_age[!is.na(member_age)]
+  member_days_active <- member_days_active[!is.na(member_days_active)]
+  member_city <- member_city[!is.na(member_city)]
+  member_city <- member_city[-151]
 
   
-    
   
   members_df <- data.frame(name  = member_names, 
-                          party = member_party, 
-                          url = member_url)
+                           party = member_party, 
+                           url = member_url,
+                           age = member_age,
+                           city = member_city,
+                           days_active = member_days_active)
+  
   
   saveRDS(members_df, file = "clean_data/members.Rds")
   return(members_df)
