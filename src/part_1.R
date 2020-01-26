@@ -74,7 +74,7 @@ retrieve_members <- function(){
 #'
 #' @return A tibble with the columns as specified
 
-#member_url <- "/kamerleden_en_commissies/alle_kamerleden/esch-em-van-pvdd"
+# member_url <- "/kamerleden_en_commissies/alle_kamerleden/esch-em-van-pvdd"
 
 retrieve_member_activity <- function(member_url){
 
@@ -92,12 +92,17 @@ if (grepl("vragen", full_list_links[1])){
     page_questions <- httr::GET(url_questions) %>% httr::content()
     
     question_title <- page_questions %>% rvest::html_nodes("h3") %>%  rvest::html_text()
-    question_url <- page_questions %>% rvest::html_nodes("h3") %>% rvest::html_attr("href") #werkt nog niet
+    question_url <- page_questions %>% 
+                    rvest::html_nodes(css = "#content-main") %>% 
+                    rvest::html_nodes(css = ".search-result-content") %>% 
+                    rvest::html_nodes("a") %>% 
+                    rvest::html_attr("href") 
+    question_url <- question_url[!is.na(question_url)]
     question_id <- page_questions %>% rvest::html_nodes(".id") %>%  rvest::html_text()
     question_date <- page_questions %>% rvest::html_nodes(".date") %>%  rvest::html_text()
     
     member_data_question <- tibble(
-      member_url = member_url[1],
+      member_url = member_url,
       type = "Schriftelijke Vragen",
       title = question_title,
       url = question_url,
@@ -109,7 +114,12 @@ if (grepl("vragen", full_list_links[1])){
       page_moties <- httr::GET(url_moties) %>% httr::content()
       
       moties_title <- page_moties %>% rvest::html_nodes("h3") %>%  rvest::html_text()
-      moties_url <- page_moties %>% rvest::html_nodes("h3") %>% rvest::html_attr("href") #werkt nog niet
+      moties_url <- page_moties %>%
+                    rvest::html_nodes(css = "#content-main") %>% 
+                    rvest::html_nodes(css = ".search-result-content") %>% 
+                    rvest::html_nodes("a") %>% 
+                    rvest::html_attr("href") 
+      moties_url <- moties_url[!is.na(moties_url)]         
       moties_id <- page_moties %>% rvest::html_nodes(".id") %>%  rvest::html_text()
       moties_date <- page_moties %>% rvest::html_nodes(".date") %>%  rvest::html_text()
       
@@ -126,7 +136,12 @@ if (grepl("vragen", full_list_links[1])){
     page_amendementen <- httr::GET(url_amendementen) %>% httr::content()
     
     amendementen_title <- page_amendementen %>% rvest::html_nodes("h3") %>%  rvest::html_text()
-    amendementen_url <- page_amendementen %>% rvest::html_nodes("h3") %>% rvest::html_attr("href") #werkt nog niet
+    amendementen_url <- page_amendementen %>% 
+                        rvest::html_nodes(css = "#content-main") %>% 
+                        rvest::html_nodes(css = ".search-result-content") %>% 
+                        rvest::html_nodes("a") %>% 
+                        rvest::html_attr("href") 
+    amendementen_url <- amendementen_url[!is.na(amendementen_url)]
     amendementen_id <- page_amendementen %>% rvest::html_nodes(".id") %>%  rvest::html_text()
     amendementen_date <- page_amendementen %>% rvest::html_nodes(".date") %>%  rvest::html_text()
     
@@ -145,12 +160,17 @@ if (grepl("vragen", full_list_links[2])){
     page_questions <- httr::GET(url_questions) %>% httr::content()
     
     question_title <- page_questions %>% rvest::html_nodes("h3") %>%  rvest::html_text()
-    question_url <- page_questions %>% rvest::html_nodes("h3") %>% rvest::html_attr("href") #werkt nog niet
+    question_url <- page_questions %>% 
+                    rvest::html_nodes(css = "#content-main") %>% 
+                    rvest::html_nodes(css = ".search-result-content") %>% 
+                    rvest::html_nodes("a") %>% 
+                    rvest::html_attr("href") 
+    question_url <- question_url[!is.na(question_url)]
     question_id <- page_questions %>% rvest::html_nodes(".id") %>%  rvest::html_text()
     question_date <- page_questions %>% rvest::html_nodes(".date") %>%  rvest::html_text()
     
     member_data_question <- tibble(
-      member_url = member_url[1],
+      member_url = member_url,
       type = "Schriftelijke Vragen",
       title = question_title,
       url = question_url,
@@ -162,7 +182,12 @@ if (grepl("vragen", full_list_links[2])){
     page_moties <- httr::GET(url_moties) %>% httr::content()
     
     moties_title <- page_moties %>% rvest::html_nodes("h3") %>%  rvest::html_text()
-    moties_url <- page_moties %>% rvest::html_nodes("h3") %>% rvest::html_attr("href") #werkt nog niet
+    moties_url <- page_moties %>%
+      rvest::html_nodes(css = "#content-main") %>% 
+      rvest::html_nodes(css = ".search-result-content") %>% 
+      rvest::html_nodes("a") %>% 
+      rvest::html_attr("href") 
+    moties_url <- moties_url[!is.na(moties_url)]         
     moties_id <- page_moties %>% rvest::html_nodes(".id") %>%  rvest::html_text()
     moties_date <- page_moties %>% rvest::html_nodes(".date") %>%  rvest::html_text()
     
@@ -179,7 +204,12 @@ if (grepl("vragen", full_list_links[2])){
     page_amendementen <- httr::GET(url_amendementen) %>% httr::content()
     
     amendementen_title <- page_amendementen %>% rvest::html_nodes("h3") %>%  rvest::html_text()
-    amendementen_url <- page_amendementen %>% rvest::html_nodes("h3") %>% rvest::html_attr("href") #werkt nog niet
+    amendementen_url <- page_amendementen %>% 
+      rvest::html_nodes(css = "#content-main") %>% 
+      rvest::html_nodes(css = ".search-result-content") %>% 
+      rvest::html_nodes("a") %>% 
+      rvest::html_attr("href") 
+    amendementen_url <- amendementen_url[!is.na(amendementen_url)]
     amendementen_id <- page_amendementen %>% rvest::html_nodes(".id") %>%  rvest::html_text()
     amendementen_date <- page_amendementen %>% rvest::html_nodes(".date") %>%  rvest::html_text()
     
@@ -198,12 +228,17 @@ if (grepl("vragen", full_list_links[3])){
   page_questions <- httr::GET(url_questions) %>% httr::content()
   
   question_title <- page_questions %>% rvest::html_nodes("h3") %>%  rvest::html_text()
-  question_url <- page_questions %>% rvest::html_nodes("h3") %>% rvest::html_attr("href") #werkt nog niet
+  question_url <- page_questions %>% 
+                  rvest::html_nodes(css = "#content-main") %>% 
+                  rvest::html_nodes(css = ".search-result-content") %>% 
+                  rvest::html_nodes("a") %>% 
+                  rvest::html_attr("href") 
+  question_url <- question_url[!is.na(question_url)]
   question_id <- page_questions %>% rvest::html_nodes(".id") %>%  rvest::html_text()
   question_date <- page_questions %>% rvest::html_nodes(".date") %>%  rvest::html_text()
   
   member_data_question <- tibble(
-    member_url = member_url[1],
+    member_url = member_url,
     type = "Schriftelijke Vragen",
     title = question_title,
     url = question_url,
@@ -215,7 +250,12 @@ if (grepl("vragen", full_list_links[3])){
   page_moties <- httr::GET(url_moties) %>% httr::content()
   
   moties_title <- page_moties %>% rvest::html_nodes("h3") %>%  rvest::html_text()
-  moties_url <- page_moties %>% rvest::html_nodes("h3") %>% rvest::html_attr("href") #werkt nog niet
+  moties_url <- page_moties %>%
+    rvest::html_nodes(css = "#content-main") %>% 
+    rvest::html_nodes(css = ".search-result-content") %>% 
+    rvest::html_nodes("a") %>% 
+    rvest::html_attr("href")
+  moties_url <- moties_url[!is.na(moties_url)]         
   moties_id <- page_moties %>% rvest::html_nodes(".id") %>%  rvest::html_text()
   moties_date <- page_moties %>% rvest::html_nodes(".date") %>%  rvest::html_text()
   
@@ -232,7 +272,12 @@ if (grepl("vragen", full_list_links[3])){
   page_amendementen <- httr::GET(url_amendementen) %>% httr::content()
   
   amendementen_title <- page_amendementen %>% rvest::html_nodes("h3") %>%  rvest::html_text()
-  amendementen_url <- page_amendementen %>% rvest::html_nodes("h3") %>% rvest::html_attr("href") #werkt nog niet
+  amendementen_url <- page_amendementen %>% 
+    rvest::html_nodes(css = "#content-main") %>% 
+    rvest::html_nodes(css = ".search-result-content") %>% 
+    rvest::html_nodes("a") %>% 
+    rvest::html_attr("href") 
+  amendementen_url <- amendementen_url[!is.na(amendementen_url)]
   amendementen_id <- page_amendementen %>% rvest::html_nodes(".id") %>%  rvest::html_text()
   amendementen_date <- page_amendementen %>% rvest::html_nodes(".date") %>%  rvest::html_text()
   
