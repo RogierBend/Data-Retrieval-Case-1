@@ -1,0 +1,232 @@
+---
+title: "Data Retrieval & Text MIning - Assignment 1"
+author: "Rogier van der Bend (140181hb)"
+date: "28-1-2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+```
+
+```{r library, echo=FALSE, warning=FALSE, include=FALSE}
+library("tidyverse")
+library("dplyr")
+library("ggplot2")
+
+
+```
+
+
+```{r load Data, echo=FALSE, warning=FALSE, include=FALSE}
+
+df <- readRDS( "D:/Opleiding Data Science & Business Analytics/Data & Scripts/Data Retrieval & Text MIning/Data Retrieval Assignment Case/clean_data/member_activity.Rds")
+
+df$date <- as.Date(df$date, format = "%d-%m-%Y")
+
+df2019 <- df %>%
+          filter(date > as.Date("2019-01-01") & date < as.Date("2019-12-31"))
+
+members_df<- readRDS("D:/Opleiding Data Science & Business Analytics/Data & Scripts/Data Retrieval & Text MIning/Data Retrieval Assignment Case/clean_data/members.Rds")
+
+
+```
+
+#### Vraag 1a - Welke kamerlid heeft de meeste activiteiten in 2019?
+
+```{r max activiiteiten member, echo=FALSE, warning=FALSE}
+
+party_df <- merge(df2019, members_df, by.x = "member_url", by.y ="url", all = TRUE)
+
+df_activities <- party_df %>%
+                  group_by(name)%>%
+                  summarize("aantal activiteiten" = n())
+
+df_activities <- arrange(df_activities, desc(df_activities$`aantal activiteiten`))
+colnames(df_activities)[1] <- "Naam Kamerlid"
+
+options(width = 1000)
+head(df_activities, 10)
+```
+
+Het kamerlid Lilianne Ploumen van de PvdA is met 338 activiteiten in 2019 het actiefst geweest.
+
+
+
+#### Vraag 1b - Welke kamerlid heeft de minste activiteiten in 2019?
+
+```{r kamerleden met geen vragen,include=FALSE}
+# 2 kamerleden zonder activiteit in 2019
+
+df_kl <- unique(df$member_url)
+df_2019 <- unique((df2019$member_url))
+
+
+# 1ste kamerlid zonder activiteit in 2019
+diff(df_kl!=df_2019)
+
+df_kl[17]
+df_kl <- df_kl[-17]
+
+diff(df_kl!=df_2019)
+
+df_kl[62]
+```
+Als je allen de kamerleden die in 2019 actief waren, dan heeft Kamerlid Arib met 1 activiteit de laagste score.
+
+2 kamerleden hebben in 2019 geen activiteiten, dit zijn Marijke van Beukering-Huijbregts van de D66 (echter zij is net als kamerlid begonnen) en Chris Jansen van de PVV
+
+#### Vraag 2a - Welke partij heeft de meeste activiteiten in 2019?
+
+```{r max activiteiten party, echo=FALSE, warning=FALSE}
+
+
+party_df_2a <- select(party_df, member_url, party, name, type)
+
+df_party <- party_df_2a %>%
+            group_by(party)%>%
+            summarize("aantal activiteiten" = n())
+
+
+df_party <- arrange(df_party, desc(df_party$`aantal activiteiten`))
+
+colnames(df_party)[1] <- "Partij"
+
+options(width = 1000)
+df_party
+```
+In  de tabel hierboven is te zijn dat de SP de meeste activiteiten in 2019 heeft uitgevoerd.
+
+Per Partij ziet de verdeling er zo uit
+
+```{r max activiteiten party per kamerlid, echo=FALSE, warning=FALSE}
+
+df_party2 <- party_df %>%
+            group_by(party, name)%>%
+            summarize("aantal activiteiten" = n())
+
+
+df_party2 <- arrange(df_party2, party) 
+
+
+df_party2 <- df_party2 %>% group_by(party) %>% top_n(1,`aantal activiteiten`)
+
+colnames(df_party2)[1] <- "Partij"
+colnames(df_party2)[2] <- "Naam Kamerlid"
+
+options(width = 1000)
+df_party2
+```
+
+#### Vraag 3 - Zijn er perioden in het jaar dat de activiteit hoger is?
+
+```{r activiteiten per periode, echo=FALSE, warning=FALSE}
+
+df_act_per <- select(party_df, type, date)
+
+df_act_per <- df_act_per %>%
+            group_by(date)%>%
+            summarize("aantal activiteiten" = n())
+
+ggplot(df_act_per, aes(x=date, y=`aantal activiteiten`))+
+  geom_line(color="darkblue")+
+  xlab("Datum")+
+  ylab("aantal activiteiten")
+
+
+```
+
+***
+
+Uit de bovenstaande grafiek is duidelijk te zien dat er een piek is in het aantal activeiten vlak voor het zomerreces (juli-augustus). Verder is te zien dat er in de 2de helft van het jaar meer activiteiten plaatsvinden dan in het eerste deel van het jaar.
+
+
+Als we kijken naar de onderliggende categoriën, dan zien we:
+
+```{r activiteiten per periode gesplitst, echo=FALSE, warning=FALSE}
+
+df_act_per2 <- select(party_df, type, date)
+
+df_act_per2 <- df_act_per2 %>%
+            group_by(date, type)%>%
+            summarize("aantal activiteiten" = n())
+
+df_act_per2 <- na.omit(df_act_per2)
+
+ggplot(df_act_per2, aes(x=date, y=`aantal activiteiten`))+
+  geom_line(aes(colour = type))+
+  xlab("Datum")+
+  ylab("aantal activiteiten")
+
+
+```
+
+
+
+De moties volgen duidelijk hetzelfde patroon als het totaal aan activiteiten. Een hele grote piek voor het zomerreces en meer in de 2de helft van het jaar dan in de eerste helft.
+
+Voor de andere categorien geldt dat deze gedurende het jaar gelijkmatig verdeeld zijn.
+
+
+#### Vraag 4a - Is er een verband tussen leeftijd en activiteit?
+```{r activiteiten per leeftijd, echo=FALSE, warning=FALSE}
+
+df_act_lf <- select(party_df, type, age)
+
+df_act_lf <- df_act_lf %>%
+            group_by(age)%>%
+            summarize("aantal activiteiten" = n())
+
+ggplot(df_act_lf, aes(x=age, y=`aantal activiteiten`))+
+  geom_bar(stat = "identity", color = "black", fill = "red")
+
+```
+
+Wanneer je kijkt naar de grafiek hierboven zie je dat de meeste activiteiten gedaan worden door kamerleden van 36 en van 43. Naar mate de leeftijd hoger wordt, neemt het aantal activiteiten (en kamerleden van die leeftijd) af
+
+#### Vraag 4b - Is er een verband tussen leeftijd en activiteit(ter type)?
+
+```{r activiteiten per leeftijd per type, echo=FALSE, warning=FALSE}
+
+df_act_lf2 <- select(party_df, type, age)
+
+df_act_lf2 <- df_act_lf2 %>%
+            group_by(age, type)%>%
+            summarize("aantal activiteiten" = n())
+df_act_lf2 <- na.omit(df_act_lf2)
+
+
+ggplot(df_act_lf2, aes(x=age, y=`aantal activiteiten`))+
+  geom_bar(stat = "identity", aes(fill=type))
+  
+
+
+```
+
+Zoals te zien in de bovenstaande grafiek geldt voor de moties en Schriftelijke vragen dat de piek ligt bij kamerleden tussen midden 30 en midden 40. Voor amendementen en Mondelinge vragen is er veel minder een  verband met de leeftijd.
+
+
+#### Vraag 4c - Is er een verband tussen partij en activiteit?
+```{r activiteiten per party, echo=FALSE, warning=FALSE}
+
+df_act_pt <- select(party_df, type, party)
+
+df_act_pt <- df_act_pt %>%
+            group_by(party, type)%>%
+            summarize("aantal activiteiten" = n())
+df_act_pt <- na.omit(df_act_pt)
+
+ggplot(df_act_pt, aes(df_act_pt$party, df_act_pt$`aantal activiteiten`))+
+  geom_bar(stat = "identity", aes(fill=type))+
+  xlab("Partij")+
+  ylab("aantal activitieten")
+
+
+
+
+```
+`
+Als je kijkt naar het aantal activiteiten zie je  dat de SP de meeste activiteiten heeft. Verder zie je dat de 3 grote oppositie partijen (SP, PvdA, GL) meer activiteiten hebben dan de grote regeringspartijen (VVD, CDA).
+
